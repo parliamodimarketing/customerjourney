@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Journey Builder</title>
+<meta name="description" content="Trace a purchase, touchpoint by touchpoint: what was physical, what was digital, who owned it, how it felt — and what brand it adds up to.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<style>
+/* A field notebook: six stops of a purchase, cards you pin on each, then the page turns and tells you what brand they add up to. */
+:root {
+  --paper: #F4EFE5; --sheet: #FBF8F1; --ink: #1B1A17; --muted: #6C655A; --line: #D8CEBC;
+  --green: #194D36; --green-soft: #E1E9DF; --coral: #D9472D; --coral-soft: #F7E0D7;
+  --gold: #A97C14; --gold-soft: #F3E7C6; --grey: #7D766B; --grey-soft: #E9E4DA;
+  --display: "Archivo Black", "Arial Black", Impact, sans-serif;
+  --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --ui: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #121818; --sheet: #1A2223; --ink: #EDE7DC; --muted: #A69E91; --line: #33403E;
+  --green: #84C7A4; --green-soft: #1D372D; --coral: #F2806A; --coral-soft: #3A231F;
+  --gold: #E2B955; --gold-soft: #3A3120; --grey: #A9A194; --grey-soft: #2A302F; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --paper: #121818; --sheet: #1A2223; --ink: #EDE7DC; --muted: #A69E91; --line: #33403E;
+  --green: #84C7A4; --green-soft: #1D372D; --coral: #F2806A; --coral-soft: #3A231F;
+  --gold: #E2B955; --gold-soft: #3A3120; --grey: #A9A194; --grey-soft: #2A302F; color-scheme: dark }
+* { box-sizing: border-box }
+html, body { margin: 0 }
+body { background: var(--paper); color: var(--ink); font-family: var(--serif); font-size: 17px; line-height: 1.5 }
+[hidden] { display: none !important }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: max(22px, env(safe-area-inset-top, 0px)) 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+header.top { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: flex-end; justify-content: space-between; border-bottom: 1.5px solid var(--ink); padding-bottom: 12px }
+.kicker { font-family: var(--ui); font-weight: 700; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--coral) }
+h1 { font-family: var(--display); font-weight: 400; font-size: clamp(34px, 6vw, 56px); line-height: .95; margin: 6px 0 0 }
+h1 em { font-family: var(--serif); font-style: italic; color: var(--green) }
+h2 { font-family: var(--display); font-weight: 400; font-size: clamp(24px, 3.6vw, 34px); line-height: 1.05; margin: 0 0 6px }
+h2 em { font-family: var(--serif); font-style: italic; color: var(--coral); font-weight: 400 }
+h3 { font-family: var(--ui); font-weight: 700; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 10px; color: var(--muted) }
+p.lede { font-size: 19px; max-width: 46em; margin: 4px 0 22px; color: var(--ink) }
+.muted { color: var(--muted) }
+small, .small { font-size: 14px }
+nav.tabs { display: flex; flex-wrap: wrap; border: 1.5px solid var(--ink) }
+nav.tabs button { border: 0; border-right: 1.5px solid var(--ink) }
+nav.tabs button:last-child { border-right: 0 }
+nav.tabs button[aria-selected="true"] { background: var(--ink); color: var(--paper) }
+button { font-family: var(--ui); font-weight: 600; font-size: 14px; border: 1.5px solid var(--ink); background: transparent; color: var(--ink); padding: 8px 14px; border-radius: 0; cursor: pointer; line-height: 1.2 }
+button:hover { background: var(--sheet) }
+button.solid { background: var(--ink); color: var(--paper) }
+button.solid:hover { opacity: .9; background: var(--ink) }
+button.link { border: 0; padding: 4px 6px; text-decoration: underline; text-underline-offset: 3px; color: var(--muted); background: none }
+button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--coral); outline-offset: 2px }
+section.view { padding-top: 26px }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px }
+label.f { display: block; font-family: var(--ui); font-weight: 700; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; margin: 0 0 6px }
+label.f span { font-family: var(--serif); text-transform: none; letter-spacing: 0; font-weight: 400; font-style: italic; color: var(--muted); font-size: 15px }
+input[type=text], textarea { width: 100%; font-family: var(--serif); font-size: 17px; color: var(--ink); background: var(--sheet); border: 1.5px solid var(--line); border-radius: 0; padding: 10px 12px }
+textarea { min-height: 64px; resize: vertical }
+.panel { background: var(--sheet); border: 1.5px solid var(--ink); padding: 18px }
+.note { border-left: 4px solid var(--coral); padding: 4px 0 4px 14px; margin: 18px 0; max-width: 46em }
+
+/* The six stops */
+.stops { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px }
+@media (max-width: 900px) { .stops { grid-template-columns: repeat(2, minmax(0, 1fr)) } }
+@media (max-width: 600px) { .stops { grid-template-columns: 1fr } }
+.stop { background: var(--sheet); border: 1.5px solid var(--ink); display: flex; flex-direction: column; min-width: 0 }
+.stop > header { padding: 12px 14px 10px; border-bottom: 1.5px solid var(--ink); display: flex; gap: 10px; align-items: baseline }
+.stop .num { font-family: var(--display); font-size: 26px; line-height: 1; color: var(--coral) }
+.stop .name { font-family: var(--display); font-size: 19px; line-height: 1.1 }
+.stop .q { font-style: italic; color: var(--muted); font-size: 15px; display: block }
+.stop .body { padding: 12px; display: flex; flex-direction: column; gap: 10px; flex: 1 }
+.empty { font-style: italic; color: var(--muted); font-size: 15px; padding: 4px 2px }
+
+.tp { border: 1.5px solid var(--line); background: var(--paper); padding: 10px 10px 8px; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; position: relative }
+.tp[data-own=we] { border-left: 6px solid var(--green) }
+.tp[data-own=partner] { border-left: 6px solid var(--gold) }
+.tp[data-own=customer] { border-left: 6px solid var(--grey) }
+.tp[data-own=others] { border-left: 6px solid var(--coral) }
+.tp .t { font-weight: 600; line-height: 1.25; overflow-wrap: anywhere }
+.tp .face { font-size: 22px; line-height: 1 }
+.tp .meta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; align-items: center }
+.tp .nt { grid-column: 1 / -1; font-size: 14px; color: var(--muted); font-style: italic; overflow-wrap: anywhere }
+.tp .acts { grid-column: 1 / -1; display: flex; gap: 2px; justify-content: flex-end; margin-top: 2px }
+.tp .acts button { border: 0; padding: 3px 7px; font-size: 13px; color: var(--muted); background: none }
+.tp .acts button:hover { color: var(--ink); text-decoration: underline }
+.chip { font-family: var(--ui); font-weight: 700; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; padding: 2px 7px; border: 1.5px solid currentColor; line-height: 1.4 }
+.chip.we { color: var(--green) } .chip.partner { color: var(--gold) } .chip.customer { color: var(--grey) } .chip.others { color: var(--coral) }
+.chip.ch { color: var(--ink); border-color: var(--line) }
+
+.add { border-style: dashed; color: var(--muted); width: 100%; text-align: left }
+.add:hover { color: var(--ink) }
+
+/* The touchpoint form */
+form.tpf { border: 1.5px solid var(--ink); background: var(--paper); padding: 12px; display: flex; flex-direction: column; gap: 12px }
+.seg { display: flex; flex-wrap: wrap; gap: 6px }
+.seg button { padding: 6px 10px; font-size: 13px; border-color: var(--line) }
+.seg button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--paper) }
+.seg.own button[aria-pressed="true"][data-v=we] { background: var(--green); border-color: var(--green); color: var(--paper) }
+.seg.own button[aria-pressed="true"][data-v=partner] { background: var(--gold); border-color: var(--gold); color: var(--paper) }
+.seg.own button[aria-pressed="true"][data-v=customer] { background: var(--grey); border-color: var(--grey); color: var(--paper) }
+.seg.own button[aria-pressed="true"][data-v=others] { background: var(--coral); border-color: var(--coral); color: var(--paper) }
+.seg.own button small { display: block; font-weight: 400; font-size: 11px; letter-spacing: .04em; opacity: .85 }
+.seg.feel button { font-size: 22px; padding: 4px 9px; line-height: 1.1 }
+.seg.feel button small { display: block; font-family: var(--ui); font-size: 10px; letter-spacing: .04em }
+.fl { font-family: var(--ui); font-weight: 700; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px }
+form.tpf .err { color: var(--coral); font-size: 14px; font-family: var(--ui) }
+
+/* Legend */
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 0 0 18px; font-family: var(--ui); font-size: 13px }
+.legend b { display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px }
+
+/* Analysis */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0; border: 1.5px solid var(--ink); background: var(--sheet); margin-bottom: 26px }
+.kpi { padding: 14px 16px; border-right: 1.5px solid var(--line); border-bottom: 1.5px solid var(--line) }
+.kpi .v { font-family: var(--display); font-size: 34px; line-height: 1 }
+.kpi .l { font-family: var(--ui); font-weight: 700; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-top: 6px }
+.kpi .s { font-size: 14px; color: var(--muted); font-style: italic }
+.block { margin: 0 0 30px }
+.curve-wrap { background: var(--sheet); border: 1.5px solid var(--ink); padding: 10px 6px 4px; overflow-x: auto; -webkit-overflow-scrolling: touch }
+@media (max-width: 700px) { .curve-wrap svg { min-width: 680px } .curve-hint { display: block !important } }
+.curve-wrap svg { display: block; width: 100%; height: auto }
+.curve-wrap svg text { font-family: var(--ui) }
+.bars { display: flex; flex-direction: column; gap: 10px }
+.bar { display: grid; grid-template-columns: 150px 1fr 110px; gap: 10px; align-items: center; font-family: var(--ui); font-size: 14px }
+@media (max-width: 600px) { .bar { grid-template-columns: 1fr 90px } .bar .track { grid-column: 1 / -1; order: 3 } }
+.bar .lab { font-weight: 700 }
+.bar .lab small { display: block; font-weight: 400; color: var(--muted); font-size: 12px }
+.track { height: 18px; background: var(--grey-soft); position: relative }
+.track i { position: absolute; inset: 0 auto 0 0; display: block }
+.bar .val { text-align: right; color: var(--muted) }
+.mix { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px }
+@media (max-width: 600px) { .mix { grid-template-columns: repeat(3, minmax(0, 1fr)) } }
+.mix .col { font-family: var(--ui); font-size: 12px; text-align: center }
+.mix .stack { height: 96px; display: flex; flex-direction: column-reverse; border: 1.5px solid var(--ink); background: var(--sheet); margin-bottom: 6px }
+.mix .stack i { display: block }
+.acts-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px }
+.act { border: 1.5px solid var(--ink); background: var(--sheet); padding: 14px }
+.act h4 { font-family: var(--display); font-weight: 400; font-size: 20px; margin: 0 0 2px }
+.act .who { font-family: var(--ui); font-weight: 700; font-size: 11px; letter-spacing: .12em; text-transform: uppercase }
+.act ul { margin: 10px 0 0; padding-left: 18px; font-size: 15px }
+.act li { margin-bottom: 6px }
+.act[data-own=we] { border-top: 6px solid var(--green) } .act[data-own=we] .who { color: var(--green) }
+.act[data-own=partner] { border-top: 6px solid var(--gold) } .act[data-own=partner] .who { color: var(--gold) }
+.act[data-own=customer] { border-top: 6px solid var(--grey) } .act[data-own=customer] .who { color: var(--grey) }
+.act[data-own=others] { border-top: 6px solid var(--coral) } .act[data-own=others] .who { color: var(--coral) }
+.idimg { display: grid; grid-template-columns: 1fr 1fr; border: 1.5px solid var(--ink) }
+@media (max-width: 640px) { .idimg { grid-template-columns: 1fr } }
+.idimg > div { padding: 22px 20px }
+.idimg .id { background: var(--green); color: #F4EFE5 }
+.idimg .im { background: var(--coral); color: #F4EFE5 }
+.idimg .big { font-family: var(--display); font-size: clamp(26px, 4vw, 38px); line-height: 1 }
+.idimg .sub { font-style: italic; margin: 6px 0 14px; opacity: .92 }
+.idimg .words { font-size: 21px; font-weight: 600; min-height: 1.5em }
+.idimg input { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.55); color: #fff }
+.idimg input::placeholder { color: rgba(255,255,255,.75) }
+.strip { background: var(--ink); color: var(--paper); font-style: italic; font-size: 20px; text-align: center; padding: 14px 16px; margin-top: -1.5px }
+.qs { counter-reset: q; list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; max-width: 50em }
+.qs li { counter-increment: q; padding-left: 40px; position: relative }
+.qs li::before { content: counter(q); position: absolute; left: 0; top: -2px; font-family: var(--display); font-size: 24px; color: var(--coral) }
+footer { margin-top: 44px; border-top: 1.5px solid var(--ink); padding-top: 14px; font-size: 14px; color: var(--muted) }
+footer a { color: inherit }
+.toast { position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--paper); font-family: var(--ui); font-size: 14px; padding: 10px 16px; z-index: 9 }
+.confirm { border: 1.5px solid var(--coral); background: var(--coral-soft); padding: 12px 14px; margin-top: 12px }
+@media print {
+  nav.tabs, .no-print, .tp .acts, .add, footer .no-print { display: none !important }
+  body { background: #fff } section.view { display: block !important; break-before: page }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="kicker">Retail &amp; Digital Marketing · Argentina 2026</div>
+      <h1>Journey <em>Builder</em></h1>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Steps">
+      <button role="tab" data-view="purchase" aria-selected="true">1 · The purchase</button>
+      <button role="tab" data-view="journey" aria-selected="false">2 · The journey</button>
+      <button role="tab" data-view="analysis" aria-selected="false">3 · What it says</button>
+    </nav>
+  </header>
+
+  <!-- 1 · THE PURCHASE -->
+  <section class="view" id="v-purchase" role="tabpanel">
+    <h2>Trace a purchase. <em>Find the brand.</em></h2>
+    <p class="lede">Every purchase is a journey: part physical, part digital. Each moment where you meet the brand is a touchpoint. Add them all up — that's the brand. Start with one purchase: yours, or your customer's.</p>
+    <div class="grid2">
+      <div>
+        <label class="f" for="f-what">What was bought <span>— product and brand</span></label>
+        <input type="text" id="f-what" placeholder="e.g. running sneakers from a sports brand" maxlength="120">
+      </div>
+      <div>
+        <label class="f" for="f-who">Who bought it <span>— you, or a customer you know</span></label>
+        <input type="text" id="f-who" placeholder="e.g. me · or: a 30-year-old runner in Palermo" maxlength="120">
+      </div>
+    </div>
+    <div style="margin-top:18px">
+      <label class="f" for="f-design">The promise <span>— three words the brand uses about itself</span></label>
+      <input type="text" id="f-design" placeholder="e.g. fast · expert · on your side" maxlength="120">
+      <p class="small muted" style="margin:6px 0 0">Look at its website, its ads, what the salesperson said. Is the brand yours? Write the experience you want to design. At the end you'll compare it with the experience that was actually lived.</p>
+    </div>
+    <div class="row" style="margin-top:24px">
+      <button class="solid" data-go="journey">Trace the journey →</button>
+      <button id="b-example">Load the sneakers example</button>
+    </div>
+    <div class="note">
+      <strong>Six stops.</strong> Trigger · Search · Compare · Buy · Receive &amp; use · After. Not every journey uses all six, and real journeys loop back. Fill in what actually happened, not what should have.
+    </div>
+  </section>
+
+  <!-- 2 · THE JOURNEY -->
+  <section class="view" id="v-journey" role="tabpanel" hidden>
+    <h2>Every touchpoint, <em>stop by stop.</em></h2>
+    <p class="lede">For each touchpoint, say three things: was it physical or digital, who owned it, and how did it feel?</p>
+    <div class="legend" aria-label="Who owns the touchpoint">
+      <span><b style="background:var(--green)"></b><strong>We</strong> · owned — design them</span>
+      <span><b style="background:var(--gold)"></b><strong>Partners</strong> · paid / partner — choose them well</span>
+      <span><b style="background:var(--grey)"></b><strong>The customer</strong> — make it easy</span>
+      <span><b style="background:var(--coral)"></b><strong>Everyone else</strong> · earned — influence them</span>
+    </div>
+    <div class="stops" id="stops"></div>
+    <div class="row" style="margin-top:22px">
+      <button class="solid" data-go="analysis">See what it says →</button>
+      <button data-go="purchase">← The purchase</button>
+    </div>
+  </section>
+
+  <!-- 3 · ANALYSIS -->
+  <section class="view" id="v-analysis" role="tabpanel" hidden>
+    <h2 id="a-title">What your journey <em>says.</em></h2>
+    <p class="lede" id="a-lede"></p>
+    <div id="a-empty" class="panel" hidden>
+      <p style="margin:0 0 12px">No touchpoints yet. Add a few in step 2 — or load the example to see how the analysis works.</p>
+      <div class="row"><button class="solid" data-go="journey">Go to the journey</button><button id="b-example2">Load the example</button></div>
+    </div>
+    <div id="a-full">
+      <div class="kpis" id="kpis"></div>
+
+      <div class="block">
+        <h3>The experience curve</h3>
+        <div class="curve-wrap" id="curve"></div>
+        <p class="small muted curve-hint" style="display:none;margin:4px 0 0">← swipe the curve →</p>
+        <p class="small muted" style="margin:8px 0 0" id="curve-note"></p>
+      </div>
+
+      <div class="grid2 block">
+        <div>
+          <h3>Who owns the journey</h3>
+          <div class="bars" id="owners"></div>
+        </div>
+        <div>
+          <h3>Physical · digital, stop by stop</h3>
+          <div class="mix" id="mix"></div>
+          <div class="legend small" style="margin:8px 0 0"><span><b style="background:var(--ink)"></b>Physical</span><span><b style="background:var(--line);outline:1.5px solid var(--ink)"></b>Digital</span></div>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3>Where to act</h3>
+        <div class="acts-list" id="actions"></div>
+      </div>
+
+      <div class="block">
+        <h3>The promise · the experience lived</h3>
+        <div class="idimg">
+          <div class="id">
+            <div class="big">IDENTITY</div>
+            <div class="sub">The promise. Who the brand says it is.</div>
+            <div class="words" id="w-design"></div>
+          </div>
+          <div class="im">
+            <div class="big">IMAGE</div>
+            <div class="sub">The experience lived. Who the customer thinks it is.</div>
+            <label class="f" for="f-lived" style="color:#F4EFE5">Read the journey back. Three words for what was lived:</label>
+            <input type="text" id="f-lived" placeholder="e.g. great shoes · slow · hard to reach" maxlength="120">
+          </div>
+        </div>
+        <div class="strip">Every touchpoint closes the gap — or opens it.</div>
+      </div>
+
+    </div>
+
+    <div class="panel no-print" style="margin-top:8px">
+      <h3>Keep it</h3>
+      <div class="row">
+        <button id="b-copy" class="solid">Copy the summary</button>
+        <button id="b-print" data-top>Print / save as PDF</button>
+        <button id="b-save" data-top>Download the journey (.json)</button>
+        <label class="small" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:1.5px solid var(--ink);padding:7px 12px;font-family:var(--ui);font-weight:600">Open a journey file<input type="file" id="f-open" accept=".json,application/json" style="display:none"></label>
+        <button id="b-reset" class="link">Start over</button>
+      </div>
+      <div id="reset-confirm" class="confirm" hidden>
+        Clear this journey? It can't be undone.
+        <div class="row" style="margin-top:8px"><button class="solid" id="b-reset-yes">Yes, clear it</button><button id="b-reset-no">Keep it</button></div>
+      </div>
+      <p class="small muted" style="margin:10px 0 0">Your journey stays in this browser only. Nothing is sent anywhere.</p>
+    </div>
+  </section>
+
+  <footer>
+    Touchpoint owners: Lemon &amp; Verhoef, “Understanding Customer Experience Throughout the Customer Journey”, <em>Journal of Marketing</em>, 2016 · owned / paid / earned: the classic media model · peak-end rule: Kahneman et al., <em>Psychological Science</em>, 1993.<br>
+    Barbara Lorenzini · Retail &amp; Digital Marketing — from point of sale to point of experience · Master Unibo Buenos Aires
+  </footer>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function () {
+  "use strict";
+  var STOPS = [
+    { k: "trigger", n: "Trigger", q: "What made you start looking?" },
+    { k: "search",  n: "Search",  q: "Where did you look?" },
+    { k: "compare", n: "Compare", q: "What did you weigh, and against what?" },
+    { k: "buy",     n: "Buy",     q: "Where and how did you pay?" },
+    { k: "use",     n: "Receive · use", q: "How did it arrive? How did it work?" },
+    { k: "after",   n: "After",   q: "What happened next?" }
+  ];
+  var OWN = {
+    we:       { n: "We",            tag: "Owned",          verb: "Design them",     c: "--green" },
+    partner:  { n: "Partners",      tag: "Paid · partner", verb: "Choose them well", c: "--gold" },
+    customer: { n: "The customer",  tag: "Theirs",         verb: "Make it easy",    c: "--grey" },
+    others:   { n: "Everyone else", tag: "Earned",         verb: "Influence them",  c: "--coral" }
+  };
+  var FACES = { "-2": "😣", "-1": "🙁", "0": "😐", "1": "🙂", "2": "😍" };
+  var FEELN = { "-2": "awful", "-1": "bad", "0": "neutral", "1": "good", "2": "great" };
+  var KEY = "journey-builder-v1";
+
+  var state = blank();
+  var editing = null; // {stop, id|null}
+
+  function blank() { return { what: "", who: "", design: "", lived: "", tps: [] }; }
+  function uid() { return Math.random().toString(36).slice(2, 9); }
+  function $(s, r) { return (r || document).querySelector(s); }
+  function el(tag, attrs, kids) {
+    var e = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      if (k === "text") e.textContent = attrs[k];
+      else if (k === "html") e.innerHTML = attrs[k];
+      else if (k.slice(0, 2) === "on") e.addEventListener(k.slice(2), attrs[k]);
+      else e.setAttribute(k, attrs[k]);
+    });
+    (kids || []).forEach(function (c) { if (c != null) e.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
+    return e;
+  }
+  function cssv(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+  function toast(msg) { var t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(function () { t.hidden = true; }, 2200); }
+
+  /* storage: a convenience only */
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function load() { try { var s = JSON.parse(localStorage.getItem(KEY) || "null"); if (s && Array.isArray(s.tps)) state = clean(s); } catch (e) {} }
+  function clean(s) {
+    var o = blank();
+    ["what", "who", "design", "lived"].forEach(function (k) { o[k] = typeof s[k] === "string" ? s[k].slice(0, 200) : ""; });
+    o.tps = (s.tps || []).filter(function (t) { return t && STOPS.some(function (x) { return x.k === t.stop; }); }).map(function (t) {
+      return { id: String(t.id || uid()), stop: t.stop, name: String(t.name || "").slice(0, 140), ch: t.ch === "D" ? "D" : "P",
+        own: OWN[t.own] ? t.own : "we", feel: Math.max(-2, Math.min(2, parseInt(t.feel, 10) || 0)), note: String(t.note || "").slice(0, 300) };
+    });
+    return o;
+  }
+
+  var EXAMPLE = {
+    what: "Running sneakers from a sports brand", who: "Me", design: "fast · expert · on your side", lived: "",
+    tps: [
+      ["trigger", "A friend's post after her first 10K", "D", "others", 1, "I wanted that feeling — and those shoes."],
+      ["trigger", "My old shoes gave up", "P", "customer", 0, ""],
+      ["search", "Google: “best running shoes for beginners”", "D", "others", 0, "Lots of lists, all different."],
+      ["search", "Reviews and a YouTube test", "D", "others", 1, ""],
+      ["search", "Asked an AI which model fits flat feet", "D", "others", 1, "It named the brand — citing reviews, not the brand's site."],
+      ["compare", "The brand's website: sizes and prices", "D", "we", 1, ""],
+      ["compare", "Tried them on in the store", "P", "we", 2, "The shop assistant watched me run on the treadmill."],
+      ["buy", "Ordered online to get 6 cuotas sin interés", "D", "partner", 1, "The bank's promo made the decision."],
+      ["buy", "Checkout asked me to sign up first", "D", "we", -1, ""],
+      ["use", "Courier two days late, no updates", "P", "partner", -2, "I blamed the brand, not the courier."],
+      ["use", "Unboxing: tissue paper, a note, a running plan", "P", "we", 2, ""],
+      ["use", "First run", "P", "customer", 1, ""],
+      ["after", "Support chat about a size change: a bot, in circles", "D", "we", -1, ""],
+      ["after", "Exchanged in store, done in five minutes", "P", "we", 2, "That's what I tell people about."]
+    ].map(function (a) { return { id: uid(), stop: a[0], name: a[1], ch: a[2], own: a[3], feel: a[4], note: a[5] }; })
+  };
+
+  /* ---------- views ---------- */
+  var VIEWS = ["purchase", "journey", "analysis"];
+  function show(v) {
+    if (VIEWS.indexOf(v) < 0) v = "purchase";
+    VIEWS.forEach(function (x) {
+      $("#v-" + x).hidden = x !== v;
+      var b = document.querySelector('nav.tabs [data-view="' + x + '"]'); b.setAttribute("aria-selected", x === v ? "true" : "false");
+    });
+    if (v === "journey") renderStops();
+    if (v === "analysis") renderAnalysis();
+    if (location.hash.slice(1) !== v) { try { history.replaceState(null, "", "#" + v); } catch (e) { location.hash = v; } }
+    window.scrollTo(0, 0);
+  }
+  document.querySelectorAll("[data-view]").forEach(function (b) { b.addEventListener("click", function () { show(b.dataset.view); }); });
+  document.addEventListener("click", function (e) { var g = e.target.closest("[data-go]"); if (g) show(g.dataset.go); });
+  window.addEventListener("hashchange", function () { show(location.hash.slice(1)); });
+
+  /* ---------- step 1 ---------- */
+  function bindField(id, key) {
+    var i = $(id);
+    i.addEventListener("input", function () { state[key] = i.value; save(); });
+  }
+  bindField("#f-what", "what"); bindField("#f-who", "who"); bindField("#f-design", "design"); bindField("#f-lived", "lived");
+  function fillFields() { $("#f-what").value = state.what; $("#f-who").value = state.who; $("#f-design").value = state.design; $("#f-lived").value = state.lived; }
+  function loadExample() {
+    state = clean(JSON.parse(JSON.stringify(EXAMPLE))); save(); fillFields(); toast("Example loaded: running sneakers"); show("journey");
+  }
+  $("#b-example").addEventListener("click", loadExample);
+  $("#b-example2").addEventListener("click", loadExample);
+
+  /* ---------- step 2 ---------- */
+  function tpsOf(stop) { return state.tps.filter(function (t) { return t.stop === stop; }); }
+  function renderStops() {
+    var box = $("#stops"); box.innerHTML = "";
+    STOPS.forEach(function (s, i) {
+      var body = el("div", { class: "body" });
+      var list = tpsOf(s.k);
+      if (!list.length && !(editing && editing.stop === s.k)) body.appendChild(el("div", { class: "empty", text: "No touchpoints yet." }));
+      list.forEach(function (t, j) {
+        if (editing && editing.id === t.id) { body.appendChild(form(s.k, t)); return; }
+        body.appendChild(card(t, j));
+      });
+      if (editing && editing.stop === s.k && !editing.id) body.appendChild(form(s.k, null));
+      else body.appendChild(el("button", { class: "add", type: "button", text: "+ Add a touchpoint", onclick: function () { editing = { stop: s.k, id: null }; renderStops(); focusForm(); } }));
+      box.appendChild(el("article", { class: "stop", "aria-label": s.n }, [
+        el("header", null, [el("span", { class: "num", text: String(i + 1) }), el("div", null, [el("span", { class: "name", text: s.n }), el("span", { class: "q", text: s.q })])]),
+        body
+      ]));
+    });
+  }
+  function focusForm() { setTimeout(function () { var i = $("form.tpf input[name=name]"); if (i) i.focus(); }, 0); }
+  function card(t, j) {
+    var o = OWN[t.own];
+    return el("div", { class: "tp", "data-own": t.own }, [
+      el("div", { class: "t", text: t.name }),
+      el("div", { class: "face", title: FEELN[t.feel], "aria-label": "Felt " + FEELN[t.feel], text: FACES[t.feel] }),
+      el("div", { class: "meta" }, [el("span", { class: "chip ch", text: t.ch === "P" ? "Physical" : "Digital" }), el("span", { class: "chip " + t.own, text: o.n + " · " + o.tag })]),
+      t.note ? el("div", { class: "nt", text: t.note }) : null,
+      el("div", { class: "acts" }, [
+        j > 0 ? el("button", { type: "button", "aria-label": "Move up", text: "↑ up", onclick: function () { move(t.id); } }) : null,
+        el("button", { type: "button", text: "Edit", onclick: function () { editing = { stop: t.stop, id: t.id }; renderStops(); focusForm(); } })
+      ])
+    ]);
+  }
+  function move(id) {
+    var i = state.tps.findIndex(function (t) { return t.id === id; }); var t = state.tps[i];
+    for (var k = i - 1; k >= 0; k--) if (state.tps[k].stop === t.stop) { state.tps[i] = state.tps[k]; state.tps[k] = t; break; }
+    save(); renderStops();
+  }
+  function seg(cls, name, opts, val) {
+    var wrap = el("div", { class: "seg " + cls, role: "group" });
+    opts.forEach(function (o) {
+      var b = el("button", { type: "button", "data-v": o.v, "aria-pressed": String(String(o.v) === String(val)), html: o.h });
+      b.addEventListener("click", function () { wrap.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", "false"); }); b.setAttribute("aria-pressed", "true"); wrap.dataset.val = o.v; });
+      wrap.appendChild(b);
+    });
+    wrap.dataset.val = val == null ? "" : val; wrap.dataset.name = name;
+    return wrap;
+  }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function form(stop, t) {
+    var f = el("form", { class: "tpf", novalidate: "" });
+    var name = el("input", { type: "text", name: "name", maxlength: "140", placeholder: "e.g. a review on Google · the store window · the courier", value: t ? t.name : "" });
+    var ch = seg("ch", "ch", [{ v: "P", h: "Physical" }, { v: "D", h: "Digital" }], t ? t.ch : null);
+    var own = seg("own", "own", Object.keys(OWN).map(function (k) { return { v: k, h: esc(OWN[k].n) + "<small>" + esc(OWN[k].tag) + "</small>" }; }), t ? t.own : null);
+    var feel = seg("feel", "feel", [-2, -1, 0, 1, 2].map(function (v) { return { v: v, h: FACES[v] + "<small>" + FEELN[v] + "</small>" }; }), t ? t.feel : null);
+    var note = el("input", { type: "text", name: "note", maxlength: "300", placeholder: "Optional: what happened?", value: t ? t.note : "" });
+    var err = el("div", { class: "err", role: "alert" });
+    f.appendChild(el("div", null, [el("div", { class: "fl", text: "The touchpoint" }), name]));
+    f.appendChild(el("div", null, [el("div", { class: "fl", text: "Physical or digital?" }), ch]));
+    f.appendChild(el("div", null, [el("div", { class: "fl", text: "Who owns it?" }), own]));
+    f.appendChild(el("div", null, [el("div", { class: "fl", text: "How did it feel?" }), feel]));
+    f.appendChild(el("div", null, [el("div", { class: "fl", text: "Note" }), note]));
+    f.appendChild(err);
+    var row = el("div", { class: "row" }, [
+      el("button", { type: "submit", class: "solid", text: t ? "Save" : "Add" }),
+      el("button", { type: "button", text: "Cancel", onclick: function () { editing = null; renderStops(); } }),
+      t ? el("button", { type: "button", class: "link", text: "Delete", onclick: function () { state.tps = state.tps.filter(function (x) { return x.id !== t.id; }); editing = null; save(); renderStops(); } }) : null
+    ]);
+    f.appendChild(row);
+    f.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var miss = [];
+      if (!name.value.trim()) miss.push("a name");
+      if (!ch.dataset.val) miss.push("physical or digital");
+      if (!own.dataset.val) miss.push("who owns it");
+      if (feel.dataset.val === "") miss.push("how it felt");
+      if (miss.length) { err.textContent = "Still missing: " + miss.join(", ") + "."; return; }
+      var d = { stop: stop, name: name.value.trim(), ch: ch.dataset.val, own: own.dataset.val, feel: parseInt(feel.dataset.val, 10), note: note.value.trim() };
+      if (t) Object.assign(t, d); else { d.id = uid(); state.tps.push(d); }
+      editing = null; save(); renderStops();
+    });
+    return f;
+  }
+
+  /* ---------- step 3 ---------- */
+  function ordered() {
+    var out = [];
+    STOPS.forEach(function (s) { tpsOf(s.k).forEach(function (t) { out.push(t); }); });
+    return out;
+  }
+  function avg(a) { return a.length ? a.reduce(function (x, y) { return x + y; }, 0) / a.length : 0; }
+  function fmt(x) { var r = Math.round(x * 10) / 10; return (r > 0 ? "+" : r < 0 ? "−" : "") + Math.abs(r).toFixed(1); }
+  function pct(n, d) { return d ? Math.round(n / d * 100) : 0; }
+  function peakOf(list) {
+    var p = null;
+    list.forEach(function (t) { if (!p || Math.abs(t.feel) > Math.abs(p.feel) || (Math.abs(t.feel) === Math.abs(p.feel) && t.feel < p.feel)) p = t; });
+    return p;
+  }
+
+  function renderAnalysis() {
+    var list = ordered();
+    $("#a-title").innerHTML = state.what ? esc(state.what) + " — <em>what the journey says.</em>" : "What your journey <em>says.</em>";
+    $("#a-empty").hidden = list.length > 0; $("#a-full").hidden = list.length === 0;
+    if (!list.length) { $("#a-lede").textContent = ""; return; }
+    var phys = list.filter(function (t) { return t.ch === "P"; }).length;
+    var owned = list.filter(function (t) { return t.own === "we"; }).length;
+    var peak = peakOf(list), end = list[list.length - 1];
+    var lived = avg(list.map(function (t) { return t.feel; }));
+    var remembered = (peak.feel + end.feel) / 2;
+    var stopsUsed = STOPS.filter(function (s) { return tpsOf(s.k).length; }).length;
+    $("#a-lede").textContent = list.length + " touchpoints across " + stopsUsed + " of 6 stops" + (state.who ? ", lived by " + state.who.toLowerCase().replace(/^me$/, "you") : "") + ". Added up, this is the brand — whatever the brand says about itself.";
+
+    var k = $("#kpis"); k.innerHTML = "";
+    [[String(list.length), "Touchpoints", stopsUsed + " of 6 stops"],
+     [pct(phys, list.length) + "%", "Physical", (100 - pct(phys, list.length)) + "% digital"],
+     [pct(owned, list.length) + "%", "Owned by the brand", (list.length - owned) + " touchpoints it doesn't own"],
+     [fmt(lived), "Lived, on average", "from −2 to +2"],
+     [fmt(remembered), "Remembered", "peak and end"]].forEach(function (x) {
+      k.appendChild(el("div", { class: "kpi" }, [el("div", { class: "v", text: x[0] }), el("div", { class: "l", text: x[1] }), el("div", { class: "s", text: x[2] })]));
+    });
+
+    renderCurve(list, peak, end);
+    var gap = remembered - lived;
+    $("#curve-note").textContent = "Peak: “" + peak.name + "” (" + FEELN[peak.feel] + "). End: “" + end.name + "” (" + FEELN[end.feel] + "). " +
+      (Math.abs(gap) < 0.25 ? "Here, the memory roughly matches the average." :
+       gap > 0 ? "The memory is kinder than the average: the peak and the end are doing the work." :
+                 "The memory is harsher than the average: one bad peak or a weak ending outweighs the rest.") +
+      " People tend to remember an experience by its most intense moment and its end, not by the average.";
+
+    var ob = $("#owners"); ob.innerHTML = "";
+    Object.keys(OWN).forEach(function (key) {
+      var sub = list.filter(function (t) { return t.own === key; });
+      var a = avg(sub.map(function (t) { return t.feel; }));
+      ob.appendChild(el("div", { class: "bar" }, [
+        el("div", { class: "lab", html: esc(OWN[key].n) + "<small>" + esc(OWN[key].tag) + " · " + esc(OWN[key].verb.toLowerCase()) + "</small>" }),
+        el("div", { class: "track" }, [el("i", { style: "width:" + pct(sub.length, list.length) + "%;background:var(" + OWN[key].c + ")" })]),
+        el("div", { class: "val", text: sub.length + " · " + (sub.length ? FACES[Math.round(a)] + " " + fmt(a) : "—") })
+      ]));
+    });
+
+    var mx = $("#mix"); mx.innerHTML = "";
+    STOPS.forEach(function (s) {
+      var sub = tpsOf(s.k), p = sub.filter(function (t) { return t.ch === "P"; }).length, d = sub.length - p;
+      var stack = el("div", { class: "stack", title: p + " physical · " + d + " digital" });
+      if (sub.length) {
+        stack.appendChild(el("i", { style: "height:" + pct(p, sub.length) + "%;background:var(--ink)" }));
+        stack.appendChild(el("i", { style: "height:" + pct(d, sub.length) + "%;background:var(--line)" }));
+      }
+      mx.appendChild(el("div", { class: "col" }, [stack, el("div", { text: s.n }), el("div", { class: "muted", text: sub.length ? p + "P · " + d + "D" : "empty" })]));
+    });
+
+    renderActions(list, peak, end);
+    $("#w-design").textContent = state.design || "Not set — add it in step 1.";
+    $("#f-lived").value = state.lived;
+  }
+
+  function renderCurve(list, peak, end) {
+    var W = 1000, H = 330, L = 64, R = 20, T = 34, B = 54;
+    var n = list.length, iw = W - L - R, ih = H - T - B;
+    function x(i) { return L + (n === 1 ? iw / 2 : iw * (i + 0.5) / n); }
+    function y(v) { return T + ih * (2 - v) / 4; }
+    var ink = cssv("--ink"), line = cssv("--line"), muted = cssv("--muted"), sheet = cssv("--sheet"), coral = cssv("--coral");
+    var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Experience curve: how each touchpoint felt, in order">';
+    // stop bands
+    var idx = 0;
+    STOPS.forEach(function (st, si) {
+      var c = tpsOf(st.k).length; if (!c) return;
+      var x0 = L + iw * idx / n, x1 = L + iw * (idx + c) / n;
+      if (si % 2 === 0) s += '<rect x="' + x0 + '" y="' + T + '" width="' + (x1 - x0) + '" height="' + ih + '" fill="' + line + '" opacity=".28"/>';
+      s += '<text x="' + ((x0 + x1) / 2) + '" y="' + (H - 18) + '" text-anchor="middle" font-size="15" font-weight="700" fill="' + ink + '">' + esc(st.n) + '</text>';
+      idx += c;
+    });
+    [-2, -1, 0, 1, 2].forEach(function (v) {
+      s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="' + (v === 0 ? muted : line) + '" stroke-width="' + (v === 0 ? 1.5 : 1) + '"' + (v === 0 ? ' stroke-dasharray="5 5"' : '') + '/>';
+      s += '<text x="' + (L - 12) + '" y="' + (y(v) + 7) + '" text-anchor="end" font-size="20">' + FACES[v] + '</text>';
+    });
+    var pts = list.map(function (t, i) { return x(i) + "," + y(t.feel); }).join(" ");
+    s += '<polyline points="' + pts + '" fill="none" stroke="' + ink + '" stroke-width="3" stroke-linejoin="round"/>';
+    list.forEach(function (t, i) {
+      var c = cssv(OWN[t.own].c), cx = x(i), cy = y(t.feel);
+      var title = '<title>' + esc(t.name) + ' · ' + (t.ch === "P" ? "physical" : "digital") + ' · ' + esc(OWN[t.own].n) + ' · ' + FEELN[t.feel] + '</title>';
+      if (t.ch === "P") s += '<rect x="' + (cx - 10) + '" y="' + (cy - 10) + '" width="20" height="20" fill="' + c + '" stroke="' + sheet + '" stroke-width="2.5">' + title + '</rect>';
+      else s += '<circle cx="' + cx + '" cy="' + cy + '" r="11" fill="' + c + '" stroke="' + sheet + '" stroke-width="2.5">' + title + '</circle>';
+    });
+    function tag(t, label, dy) {
+      var i = list.indexOf(t), cx = x(i), cy = y(t.feel) + dy;
+      var w = label.length * 9.5 + 16;
+      var tx = Math.max(L + w / 2, Math.min(W - R - w / 2, cx));
+      s += '<rect x="' + (tx - w / 2) + '" y="' + (cy - 15) + '" width="' + w + '" height="24" fill="' + coral + '"/>';
+      s += '<text x="' + tx + '" y="' + (cy + 3) + '" text-anchor="middle" font-size="13" font-weight="700" letter-spacing="1.5" fill="#fff">' + label + '</text>';
+    }
+    var up = function (t) { return -24; };
+    if (peak === end) tag(end, "PEAK · END", up(end));
+    else { tag(peak, "PEAK", up(peak)); tag(end, "END", up(end)); }
+    s += '</svg>';
+    $("#curve").innerHTML = s;
+  }
+
+  function renderActions(list, peak, end) {
+    var box = $("#actions"); box.innerHTML = "";
+    var A = { we: [], partner: [], customer: [], others: [] };
+    list.forEach(function (t) {
+      var nm = "“" + t.name + "”";
+      if (t.own === "we") {
+        if (t.feel < 0) A.we.push(["Redesign " + nm + ": it's yours, and it hurts.", 3]);
+        else if (t.feel === 2) A.we.push(["Protect " + nm + " — it's a reason to come back.", 1]);
+      } else if (t.own === "partner") {
+        if (t.feel < 0) A.partner.push(["Brief, measure or replace: " + nm + ". The customer blamed the brand.", 3]);
+        else if (t.feel === 2) A.partner.push(["Keep " + nm + " — and say it out loud.", 1]);
+      } else if (t.own === "customer") {
+        if (t.feel < 0) A.customer.push(["Make " + nm + " easier: a guide, a tip, a nudge at the right moment.", 2]);
+      } else {
+        if (t.feel < 0) A.others.push(["Answer and fix the cause of " + nm + ": what others say starts from what we did.", 3]);
+        else if (t.feel >= 1) A.others.push(["Amplify " + nm + ": give people more reasons to tell it again.", 1]);
+      }
+    });
+    if (peak.feel < 0) (A[peak.own]).unshift(["The peak is negative. Fix “" + peak.name + "” first: it's the moment people will remember.", 4]);
+    if (end.feel <= 0) (A[end.own]).unshift(["The journey ends flat or badly. Design a better last moment — “" + end.name + "” is the memory people take home.", 4]);
+    STOPS.forEach(function (s) { if (!tpsOf(s.k).length) A.we.push(["Nothing at “" + s.n + "”. Was the brand missing there — or did you forget a touchpoint?", 2]); });
+    var others = list.filter(function (t) { return t.own === "others"; }).length;
+    if (others && pct(others, list.length) >= 35) A.others.push(["Most of this story is told by others. The way to influence it is to be excellent where you own the touchpoint.", 2]);
+    Object.keys(OWN).forEach(function (key) {
+      var items = A[key].sort(function (a, b) { return b[1] - a[1]; });
+      var ul = el("ul");
+      if (!items.length) ul.appendChild(el("li", { class: "muted", text: "Nothing urgent here." }));
+      items.slice(0, 5).forEach(function (it) { ul.appendChild(el("li", { text: it[0] })); });
+      box.appendChild(el("div", { class: "act", "data-own": key }, [
+        el("div", { class: "who", text: OWN[key].n + " · " + OWN[key].tag }),
+        el("h4", { text: OWN[key].verb + "." }), ul
+      ]));
+    });
+  }
+
+
+  /* ---------- keep it ---------- */
+  function summary() {
+    var list = ordered(), lines = [];
+    lines.push("JOURNEY BUILDER — " + (state.what || "A purchase"));
+    if (state.who) lines.push("Who: " + state.who);
+    lines.push("");
+    STOPS.forEach(function (s, i) {
+      var sub = tpsOf(s.k); lines.push((i + 1) + ". " + s.n.toUpperCase());
+      if (!sub.length) lines.push("   —");
+      sub.forEach(function (t) { lines.push("   " + FACES[t.feel] + " " + t.name + " · " + (t.ch === "P" ? "physical" : "digital") + " · " + OWN[t.own].n + " (" + OWN[t.own].tag + ")" + (t.note ? " — " + t.note : "")); });
+    });
+    if (list.length) {
+      var peak = peakOf(list), end = list[list.length - 1];
+      lines.push("");
+      lines.push("Physical " + pct(list.filter(function (t) { return t.ch === "P"; }).length, list.length) + "% · owned by the brand " + pct(list.filter(function (t) { return t.own === "we"; }).length, list.length) + "%");
+      lines.push("Lived on average " + fmt(avg(list.map(function (t) { return t.feel; }))) + " · remembered (peak and end) " + fmt((peak.feel + end.feel) / 2));
+      lines.push("Peak: " + peak.name + " · End: " + end.name);
+    }
+    lines.push("");
+    lines.push("The promise: " + (state.design || "—"));
+    lines.push("The experience lived: " + (state.lived || "—"));
+    return lines.join("\n");
+  }
+  $("#b-copy").addEventListener("click", function () {
+    var txt = summary();
+    function fallback() {
+      var ta = el("textarea"); ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select();
+      var ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+      document.body.removeChild(ta); toast(ok ? "Summary copied" : "Couldn't copy — select and copy by hand");
+    }
+    try { navigator.clipboard.writeText(txt).then(function () { toast("Summary copied"); }, fallback); } catch (e) { fallback(); }
+  });
+  var framed = (function () { try { return window.self !== window.top; } catch (e) { return true; } })();
+  if (framed) document.querySelectorAll("[data-top]").forEach(function (b) { b.hidden = true; });
+  $("#b-print").addEventListener("click", function () { try { window.print(); } catch (e) {} });
+  $("#b-save").addEventListener("click", function () {
+    try {
+      var blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+      var a = el("a", { href: URL.createObjectURL(blob), download: "journey-" + (state.what || "purchase").toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 40) + ".json" });
+      document.body.appendChild(a); a.click(); a.remove();
+    } catch (e) { toast("Download not available here"); }
+  });
+  $("#f-open").addEventListener("change", function (e) {
+    var file = e.target.files && e.target.files[0]; if (!file) return;
+    var r = new FileReader();
+    r.onload = function () { try { state = clean(JSON.parse(r.result)); save(); fillFields(); renderAnalysis(); toast("Journey opened"); } catch (err) { toast("That file isn't a journey"); } };
+    r.readAsText(file); e.target.value = "";
+  });
+  $("#b-reset").addEventListener("click", function () { $("#reset-confirm").hidden = false; });
+  $("#b-reset-no").addEventListener("click", function () { $("#reset-confirm").hidden = true; });
+  $("#b-reset-yes").addEventListener("click", function () { state = blank(); editing = null; save(); fillFields(); $("#reset-confirm").hidden = true; show("purchase"); toast("Cleared"); });
+
+  load(); fillFields(); show(location.hash.slice(1) || "purchase");
+})();
+</script>
+</body>
+</html>
