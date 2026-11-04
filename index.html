@@ -199,9 +199,9 @@ footer a { color: inherit }
       </div>
     </div>
     <div style="margin-top:18px">
-      <label class="f" for="f-design">The experience we design <span>— three words for who the brand wants to be</span></label>
+      <label class="f" for="f-design">The promise <span>— three words the brand uses about itself</span></label>
       <input type="text" id="f-design" placeholder="e.g. fast · expert · on your side" maxlength="120">
-      <p class="small muted" style="margin:6px 0 0">Writing about a brand that isn't yours? Write what it seems to promise. You'll compare it with the experience the customer lives at the end.</p>
+      <p class="small muted" style="margin:6px 0 0">Look at its website, its ads, what the salesperson said. Is the brand yours? Write the experience you want to design. At the end you'll compare it with the experience that was actually lived.</p>
     </div>
     <div class="row" style="margin-top:24px">
       <button class="solid" data-go="journey">Trace the journey →</button>
@@ -265,17 +265,17 @@ footer a { color: inherit }
       </div>
 
       <div class="block">
-        <h3>The experience we design · the experience they live</h3>
+        <h3>The promise · the experience lived</h3>
         <div class="idimg">
           <div class="id">
             <div class="big">IDENTITY</div>
-            <div class="sub">The experience we design. Who we want to be.</div>
+            <div class="sub">The promise. Who the brand says it is.</div>
             <div class="words" id="w-design"></div>
           </div>
           <div class="im">
             <div class="big">IMAGE</div>
-            <div class="sub">The experience they live. Who they think we are.</div>
-            <label class="f" for="f-lived" style="color:#F4EFE5">Read the journey back. Three words the customer would use:</label>
+            <div class="sub">The experience lived. Who the customer thinks it is.</div>
+            <label class="f" for="f-lived" style="color:#F4EFE5">Read the journey back. Three words for what was lived:</label>
             <input type="text" id="f-lived" placeholder="e.g. great shoes · slow · hard to reach" maxlength="120">
           </div>
         </div>
@@ -658,7 +658,7 @@ footer a { color: inherit }
       "Where did physical and digital hand over to each other? Was the handover smooth, or did you have to start again?",
       "The customer doesn't care who owns the touchpoint. Where did the brand take the blame, or the credit, for someone else's work?"
     ];
-    if (state.design) q.splice(1, 0, "Read the three words of the experience we design: “" + state.design + "”. Which touchpoints prove them? Which ones contradict them?");
+    if (state.design) q.splice(1, 0, "The brand promised: “" + state.design + "”. Which touchpoints kept the promise? Which ones broke it?");
     var ol = $("#questions"); ol.innerHTML = "";
     q.forEach(function (t) { ol.appendChild(el("li", { text: t })); });
   }
@@ -682,8 +682,8 @@ footer a { color: inherit }
       lines.push("Peak: " + peak.name + " · End: " + end.name);
     }
     lines.push("");
-    lines.push("The experience we design: " + (state.design || "—"));
-    lines.push("The experience they live: " + (state.lived || "—"));
+    lines.push("The promise: " + (state.design || "—"));
+    lines.push("The experience lived: " + (state.lived || "—"));
     return lines.join("\n");
   }
   $("#b-copy").addEventListener("click", function () {
